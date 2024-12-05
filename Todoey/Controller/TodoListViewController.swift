@@ -9,12 +9,19 @@
 import UIKit
 
 class TodoListViewController: UITableViewController {
-    
-    var itemArray = ["Find Mike", "Buy Eggos", "Destroy Demogorgon"]
 
+//    var itemArray = [Item(title: "Find Mike"),
+//                    Item(title: "Buy Eggos"),
+//                    Item(title: "Destroy Demogorgon")]
+    
+//    var itemArray = [Item]()
+    var itemArray: [Item] = []
+    
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
+        loadItems()
     }
     
     //MARK: - UITableView Datasource
@@ -26,17 +33,20 @@ class TodoListViewController: UITableViewController {
     
     // Provide a cell object for each row.
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
         let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
-        let itemContent = itemArray[indexPath.row]
+        let item = itemArray[indexPath.row]
         
         if #available(iOS 14.0, *) {
             var content = cell.defaultContentConfiguration()
-            content.text = itemContent
+            content.text = item.title
             cell.contentConfiguration = content
         }
         else {
-            cell.textLabel?.text = itemContent
+            cell.textLabel?.text = item.title
         }
+        
+        cell.accessoryType = item.done ? .checkmark : .none
         
         return cell
     }
@@ -44,15 +54,14 @@ class TodoListViewController: UITableViewController {
     //MARK: - UITableView Delegate Methods
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        print(itemArray[indexPath.row])
+        let item = itemArray[indexPath.row]
         
-        let cell = tableView.cellForRow(at: indexPath)
+        // Toggles item.done boolean property
+        item.done = !item.done
+//        print(item.done)
         
-        if cell?.accessoryType == .checkmark {
-            cell?.accessoryType = .none
-        } else {
-            cell?.accessoryType = .checkmark
-        }
+        self.saveItems()
+        
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
@@ -67,8 +76,10 @@ class TodoListViewController: UITableViewController {
         let action = UIAlertAction(title: "Add Item", style: .default) { action in
             // What will happen when the user clicks the add Item Button on our UIAlert
             if textfield.text != "" {
-                self.itemArray.append(textfield.text!)
-                self.tableView.reloadData()
+                let newItem = Item(title: textfield.text!)
+                
+                self.itemArray.append(newItem)
+                self.saveItems()
             }
         }
         
@@ -80,5 +91,29 @@ class TodoListViewController: UITableViewController {
         alert.addAction(action)
         
         present(alert, animated: true, completion: nil)
+    }
+    
+    //MARK: - Model Manipulation Methods
+    
+    func saveItems() {
+        let encoder = PropertyListEncoder()
+        do {
+            let data = try encoder.encode(itemArray)
+            try data.write(to: dataFilePath!)
+        } catch {
+            print("Error encoding item array, \(error)" )
+        }
+        self.tableView.reloadData()
+    }
+    
+    func loadItems() {
+        if let data = try? Data(contentsOf: dataFilePath!) {
+            let decoder = PropertyListDecoder()
+            do {
+                itemArray = try decoder.decode([Item].self, from: data)
+            } catch {
+                print("Error decoding item array, \(error)")
+            }
+        }
     }
 }
