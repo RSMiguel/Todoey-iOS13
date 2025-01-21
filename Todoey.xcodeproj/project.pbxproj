@@ -11,6 +11,8 @@
 		5FEC83D22D36D2E60068DC66 /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 5FEC83D12D36D2E60068DC66 /* RealmSwift */; };
 		5FEC83D62D36E2100068DC66 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FEC83D52D36E2100068DC66 /* Item.swift */; };
 		5FEC83D82D36E21A0068DC66 /* Category.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FEC83D72D36E21A0068DC66 /* Category.swift */; };
+		5FEC83DB2D3AD9180068DC66 /* Chameleon in Frameworks */ = {isa = PBXBuildFile; productRef = 5FEC83DA2D3AD9180068DC66 /* Chameleon */; };
+		5FEC83DD2D3AD9180068DC66 /* ChameleonSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 5FEC83DC2D3AD9180068DC66 /* ChameleonSwift */; };
 		EB2BE4FA239524DB00FB933B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB2BE4F9239524DB00FB933B /* AppDelegate.swift */; };
 		EB2BE4FE239524DB00FB933B /* TodoListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB2BE4FD239524DB00FB933B /* TodoListViewController.swift */; };
 		EB2BE501239524DB00FB933B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EB2BE4FF239524DB00FB933B /* Main.storyboard */; };
@@ -50,6 +52,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				5FEC83D22D36D2E60068DC66 /* RealmSwift in Frameworks */,
+				5FEC83DB2D3AD9180068DC66 /* Chameleon in Frameworks */,
+				5FEC83DD2D3AD9180068DC66 /* ChameleonSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -147,6 +151,8 @@
 			name = Todoey;
 			packageProductDependencies = (
 				5FEC83D12D36D2E60068DC66 /* RealmSwift */,
+				5FEC83DA2D3AD9180068DC66 /* Chameleon */,
+				5FEC83DC2D3AD9180068DC66 /* ChameleonSwift */,
 			);
 			productName = Todoey;
 			productReference = EB2BE4F6239524DB00FB933B /* Todoey.app */;
@@ -178,6 +184,7 @@
 			mainGroup = EB2BE4ED239524DB00FB933B;
 			packageReferences = (
 				5FEC83D02D36D2E60068DC66 /* XCRemoteSwiftPackageReference "realm-swift" */,
+				5FEC83D92D3AD9180068DC66 /* XCRemoteSwiftPackageReference "Chameleon" */,
 			);
 			productRefGroup = EB2BE4F7239524DB00FB933B /* Products */;
 			projectDirPath = "";
@@ -357,7 +364,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = TN4525L258;
 				INFOPLIST_FILE = Todoey/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -377,7 +384,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = TN4525L258;
 				INFOPLIST_FILE = Todoey/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -422,6 +429,14 @@
 				kind = branch;
 			};
 		};
+		5FEC83D92D3AD9180068DC66 /* XCRemoteSwiftPackageReference "Chameleon" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/dwsdolce/Chameleon";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.2.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -429,6 +444,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 5FEC83D02D36D2E60068DC66 /* XCRemoteSwiftPackageReference "realm-swift" */;
 			productName = RealmSwift;
+		};
+		5FEC83DA2D3AD9180068DC66 /* Chameleon */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5FEC83D92D3AD9180068DC66 /* XCRemoteSwiftPackageReference "Chameleon" */;
+			productName = Chameleon;
+		};
+		5FEC83DC2D3AD9180068DC66 /* ChameleonSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5FEC83D92D3AD9180068DC66 /* XCRemoteSwiftPackageReference "Chameleon" */;
+			productName = ChameleonSwift;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

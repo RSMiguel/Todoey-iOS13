@@ -8,16 +8,25 @@
 
 import UIKit
 import RealmSwift
+import ChameleonSwift
 
 class CategoryViewController: UITableViewController {
     
-    let realm = try! Realm()
+    lazy var realm = try! Realm()
     
     var categories: Results<Category>?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         loadCategories()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        guard let navBar = navigationController?.navigationBar else {
+            fatalError("Navigation Controller does not exist yet.")
+        }
+        navBar.backgroundColor = FlatNavyBlueDark().lighten(byPercentage: 0.45)
+        navBar.tintColor = ContrastColorOf(navBar.backgroundColor!, returnFlat: true)
     }
     
     //MARK: - TableView Datasource Methods
@@ -27,15 +36,25 @@ class CategoryViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
-        let category = categories?[indexPath.row]
+        let categoryName = categories?[indexPath.row].name ?? "No Categories added yet"
         
-        if #available(iOS 14.0, *) {
-            var content = cell.defaultContentConfiguration()
-            content.text = category?.name ?? "No Categories added yet"
-            cell.contentConfiguration = content
-        } else {
-            // Fallback on earlier versions
-            cell.textLabel?.text = category?.name ?? "No Categories added yet"
+        if let category = categories?[indexPath.row] {
+            if #available(iOS 14.0, *) {
+                var content = cell.defaultContentConfiguration()
+                content.text = categoryName
+                
+                guard let cellColor = UIColor(hexString: category.color) else {
+                    fatalError("Could not load the cell color")
+                }
+                
+                cell.backgroundColor = cellColor
+                content.textProperties.color = ContrastColorOf(cellColor, returnFlat: true)
+                
+                cell.contentConfiguration = content
+            } else {
+                // Fallback on earlier versions
+                cell.textLabel?.text = categoryName
+            }
         }
         return cell
     }
@@ -47,15 +66,39 @@ class CategoryViewController: UITableViewController {
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
-//    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-//        if editingStyle == .delete {
-//            context.delete(categories[indexPath.row])
-//            categories.remove(at: indexPath.row)
-//            
-//            tableView.deleteRows(at: [indexPath], with: .fade)
-//            
-//            self.saveCategories()
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            if let category = categories?[indexPath.row] {
+                do {
+                    try realm.write {
+                        realm.delete(category)
+                        tableView.deleteRows(at: [indexPath], with: .fade)
+                    }
+                } catch {
+                    print("Error deleting category, \(error)")
+                }
+            }
+            self.tableView.reloadData()
+        }
+    }
+
+//    override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration?{
+//        let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { [self](action, sourceView, completionHandler) in
+//            if let deleteCategory = categories?[indexPath.row]{
+//                do {
+//                    try realm.write {
+//                        realm.delete(deleteCategory)
+//                        tableView.deleteRows(at: [indexPath], with: .automatic)
+//                    }
+//                } catch {
+//                    fatalError("Faild to delete Category from Realm")
+//                }
+//                completionHandler(true)
+//                tableView.reloadData()
+//            }
 //        }
+//        let actions = UISwipeActionsConfiguration(actions: [deleteAction])
+//        return actions
 //    }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -96,6 +139,7 @@ class CategoryViewController: UITableViewController {
             if alertTextField.text != "" {
                 let newCategory = Category()
                 newCategory.name = alertTextField.text!
+                newCategory.color = RandomFlatColorWithShade(.light).hexValue()
                 
                 self.save(category: newCategory)
                 print("List added succesfully")

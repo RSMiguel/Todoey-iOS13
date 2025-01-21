@@ -8,9 +8,12 @@
 
 import UIKit
 import RealmSwift
+import ChameleonSwift
 
 class TodoListViewController: UITableViewController {
     
+    @IBOutlet weak var searchBar: UISearchBar!
+
     let realm = try! Realm()
     
     var toDoItems: Results<Item>?
@@ -23,6 +26,32 @@ class TodoListViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        if let colorHex = selectedCategory?.color {
+            title = selectedCategory!.name
+            
+            guard let navBar = navigationController?.navigationBar else { fatalError("Navigation Controller does not exist yet.")}
+            if let navBarColor = UIColor(hexString: colorHex) {
+                
+                let contrastColor = ContrastColorOf(navBarColor, returnFlat: true)
+                navBar.barTintColor = navBarColor
+                navBar.backgroundColor = navBarColor
+                
+                navBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: contrastColor]
+                navBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: contrastColor]
+                
+//                navBar.standardAppearance.backgroundColor = navBarColor
+//                navBar.standardAppearance.titleTextAttributes = [NSAttributedString.Key.foregroundColor: contrastColor]
+//                navBar.scrollEdgeAppearance?.backgroundColor = navBarColor
+                
+                navBar.tintColor = contrastColor
+                
+                searchBar.barTintColor = navBarColor
+                searchBar.searchTextField.backgroundColor = FlatWhite()
+            }
+        }
     }
     
     //MARK: - UITableView Datasource
@@ -41,6 +70,13 @@ class TodoListViewController: UITableViewController {
             if #available(iOS 14.0, *) {
                 var content = cell.defaultContentConfiguration()
                 content.text = item.title
+                
+                if let color = UIColor(hexString: selectedCategory!.color)?.darken(byPercentage:
+                    CGFloat(indexPath.row) * 0.3 / CGFloat(toDoItems!.count)) {
+                    cell.backgroundColor = color
+                    content.textProperties.color = ContrastColorOf(color, returnFlat: true)
+                }
+                
                 cell.contentConfiguration = content
             }
             else {
@@ -106,6 +142,7 @@ class TodoListViewController: UITableViewController {
                         try self.realm.write {
                             let newItem = Item()
                             newItem.title = textfield.text!
+                            newItem.dateCreated = Date()
                             
                             currentCategory.items.append(newItem)
                         }
@@ -135,36 +172,38 @@ class TodoListViewController: UITableViewController {
 }
 
 //MARK: - UISearchBar Delegate Methods
-//extension TodoListViewController: UISearchBarDelegate {
-//    
-//    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-//        let request: NSFetchRequest<Item> = Item.fetchRequest()
-//        
-//        let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
-//        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
-//        
-//        if searchBar.text?.count == 0 {
-//            loadItems()
-//        } else {
-//            loadItems(with: request, predicate: predicate)
-//        }
-//    }
-//    
-//    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
-//        searchBar.resignFirstResponder()
-//        searchBar.text = ""
-//        loadItems()
-//    }
-//    
-//    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-//        searchBarSearchButtonClicked(searchBar)
-//    }
-//    
-//    func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
-//        searchBar.showsCancelButton = true
-//    }
-//    
-//    func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
-//        searchBar.showsCancelButton = false
-//    }
-//}
+extension TodoListViewController: UISearchBarDelegate {
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+//        let items = realm.objects(Item.self)
+//            let filterItems = items.where {
+//                $0.title.contains(searchBar.text!)
+//            }
+        if searchBar.text?.count == 0 {
+            loadItems()
+            print("loading items")
+        } else {
+            toDoItems = toDoItems?.filter("title CONTAINS[cd] %@", searchBar.text!).sorted(byKeyPath: "dateCreated", ascending: true)
+            self.tableView.reloadData()
+            print("filtering...")
+        }
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
+        searchBar.text = ""
+        loadItems()
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        searchBarSearchButtonClicked(searchBar)
+    }
+    
+    func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
+        searchBar.showsCancelButton = true
+    }
+    
+    func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
+        searchBar.showsCancelButton = false
+    }
+}
